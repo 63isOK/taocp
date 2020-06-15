@@ -30,15 +30,15 @@ EXIT      JMP   *
 
 * call MAXNUM
 
-START     IN    X+1(0)
-          JBUS  *(0)
-          ENT1  100
-1H        JMP   MAXMUM
-          LDX   X,1
-          STA   X,1
-          STX   X,2
-          DEC1  1
-          J1P   1B
-          OUT   X+1(1)
+START     IN    X+1(0)      u0, word block is 100words
+          JBUS  *(0)        wait until u0 is ready
+          ENT1  100         set n=100
+1H        JMP   MAXNUM      call MAXNUM
+          LDX   X,1         rX=X[n]
+          STA   X,1         X[n]=rA
+          STX   X,2         X[j]=rX
+          DEC1  1           n--
+          J1P   1B          loop,change every item
+          OUT   X+1(1)      output: X[1...n]
           HLT
           END   START
