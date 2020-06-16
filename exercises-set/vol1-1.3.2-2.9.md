@@ -12,4 +12,13 @@ address如果在opcode中是一个地址,而且index=0,
 
 ## 分析
 
+书上有提示,要使用"路由表switching table"来进行"多路决策multiway decisions".
+
+书上还推荐,使用一张路由表,64个入口(opcode是1byte,正好是64),
+使用类似"LD1 C; LD1 TABLE,1; JMP 0,1"的写法.
+实在是太棒了.
+
+我们需要做的无非是对opcode细分,对mod,对address/index的一步步细分.
+是不是可以用多个表来完成.
+
 ## 解答
