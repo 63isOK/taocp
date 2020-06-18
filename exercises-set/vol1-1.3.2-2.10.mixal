@@ -1,0 +1,76 @@
+* find saddle point of matrix
+* 
+* convention:
+* rI1 = location of first saddle point.
+* M = m.  a(mn),m is row, n is column
+* N = n.
+* rI4 = i. (i=1...m)
+* rI5 = j. (j=1...n)
+*
+* label   ins   operand     comment
+BUF       EQU   0           address of matrix
+STDOUT    EQU   19          stdout
+START     ORIG  3000        main function
+          CALL  GENERATE
+          CALL  FIND
+          OUT   0,1(STDOUT)
+          HLT
+          END   START
+
+M         EQU   9           row
+N         EQU   8           column
+GENERATE  ORIG  3100
+          STJ   EXIT
+          ENT4  1-M         i=1-m
+2H        ENT5  1-N         j=1-n
+1H        ENTA  M,4         rA = i of matrix
+          MUL   N           rAX=8i
+          INCX  BUF         rX=BUF+8i
+          INCX  N,5         rX=BUF+8i+j
+          STX   rX          content of aij is aij
+          INC5  1           j++
+          J5NP  1B          if j <= n, repeat
+          INC4  1           i++
+          J4NP  2B          if i <= m, repeat
+EXIT      JMP   *
+
+* rI6 = k (BUF + 8i + j)
+* rI2 = i of check item
+* rI3 = j of check item
+FIND      ORIG  3200
+          STJ   EXITFIND
+          ENT4  -M
+3H        INC4  1
+          J4P   EXITFIND
+          ENT5  1-N
+          ENTA  M,4         rA = i of matrix
+          MUL   N           rAX=8i
+          INCX  BUF         rX=BUF+8i
+          ENT6  rX,5        k = address of minimum item of i-th row (now is a11)
+4H        INC5  1           j++
+          J5P   5F
+          ENTA  M,4         rA = i of matrix
+          MUL   N           rAX=8i
+          INCX  BUF         rX=BUF+8i
+          LDA   rX,5        rA = new k
+          CMPA  0,6         compare k and aij
+          JGE   4B
+          ENT6  rX,5
+          JMP   4B
+5H        LDA   0,6         rA=k
+          SUB   BUF
+          DIV   N
+          ENTA  rX
+          ADD   BUF
+          ENT2  rA
+6H        ENT3  1-M
+          ENTA  0,3
+          MUL   N
+          ADD   BUF,2
+          CMPA  0,6
+          JLE   7F
+          JMP   3B
+7H        INC3  1
+          J3NP  6B
+          ENT1  0,6
+EXITFIND  JMP   *
