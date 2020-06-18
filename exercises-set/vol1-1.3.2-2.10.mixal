@@ -10,62 +10,56 @@
 * label   ins   operand     comment
 BUF       EQU   0           address of matrix
 STDOUT    EQU   19          stdout
-START     ORIG  3000        main function
-          CALL  GENERATE
-          CALL  FIND
-          OUT   0,1(STDOUT)
-          HLT
-          END   START
-
 M         EQU   9           row
 N         EQU   8           column
-GENERATE  ORIG  3100
-          STJ   EXIT
-          ENT4  1-M         i=1-m
+          ORIG  3000        main function
+START     ENT4  1-M         i=1-m
 2H        ENT5  1-N         j=1-n
 1H        ENTA  M,4         rA = i of matrix
-          MUL   N           rAX=8i
+          MUL   =N=         rAX=8i
           INCX  BUF         rX=BUF+8i
           INCX  N,5         rX=BUF+8i+j
-          STX   rX          content of aij is aij
+          STX   0           content of aij is aij
+          LDX   0
           INC5  1           j++
           J5NP  1B          if j <= n, repeat
           INC4  1           i++
           J4NP  2B          if i <= m, repeat
-EXIT      JMP   *
 
 * rI6 = k (BUF + 8i + j)
 * rI2 = i of check item
 * rI3 = j of check item
-FIND      ORIG  3200
-          STJ   EXITFIND
-          ENT4  -M
+FIND      ENT4  -M
 3H        INC4  1
-          J4P   EXITFIND
+          J4P   EXIT
           ENT5  1-N
           ENTA  M,4         rA = i of matrix
-          MUL   N           rAX=8i
+          MUL   =N=         rAX=8i
           INCX  BUF         rX=BUF+8i
-          ENT6  rX,5        k = address of minimum item of i-th row (now is a11)
+          STX   0
+          ENT6  0,5        k = address of minimum item of i-th row (now is a11)
 4H        INC5  1           j++
           J5P   5F
           ENTA  M,4         rA = i of matrix
-          MUL   N           rAX=8i
+          MUL   =N=         rAX=8i
           INCX  BUF         rX=BUF+8i
-          LDA   rX,5        rA = new k
+          STX   0
+          LDA   0,5        rA = new k
           CMPA  0,6         compare k and aij
           JGE   4B
-          ENT6  rX,5
+          STX   0
+          ENT6  0,5
           JMP   4B
 5H        LDA   0,6         rA=k
           SUB   BUF
           DIV   N
-          ENTA  rX
+          SLB   6
           ADD   BUF
-          ENT2  rA
+          STA   0
+          LD2   0
 6H        ENT3  1-M
           ENTA  0,3
-          MUL   N
+          MUL   =N=         rAX=8i
           ADD   BUF,2
           CMPA  0,6
           JLE   7F
@@ -73,4 +67,7 @@ FIND      ORIG  3200
 7H        INC3  1
           J3NP  6B
           ENT1  0,6
-EXITFIND  JMP   *
+
+EXIT      OUT   0,1(STDOUT)
+          HLT
+          END   START
