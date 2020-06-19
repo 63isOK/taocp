@@ -8,25 +8,41 @@
 * rI5 = j. (j=1...n)
 *
 * label   ins   operand     comment
-BUF       EQU   0           address of matrix
+BUF       EQU   10          address of matrix
 STDOUT    EQU   19          stdout
-M         EQU   9           row
-N         EQU   8           column
-          ORIG  3000        main function
-START     ENT4  1-M         i=1-m
-2H        ENT5  1-N         j=1-n
-1H        ENTA  M,4         rA = i of matrix
-          MUL   =N=         rAX=8i
-          INCX  BUF         rX=BUF+8i
-          INCX  N,5         rX=BUF+8i+j
-          STX   0           content of aij is aij
-          LD2   0           rI2 is temp var
-          STX   0,2         
-          INC5  1           j++
-          J5NP  1B          if j <= n, repeat
-          INC4  1           i++
-          J4NP  2B          if i <= m, repeat
+M         EQU   2           row
+N         EQU   3           column
 
+
+          ORIG  14
+          CON   20
+          ORIG  15
+          CON   10
+          ORIG  16
+          CON   30
+          ORIG  17
+          CON   40
+          ORIG  18
+          CON   50
+          ORIG  19
+          CON   70
+
+          ORIG  3000        main function
+* START     ENT4  1-M         i=1-m
+* 2H        ENT5  1-N         j=1-n
+* 1H        ENTA  M,4         rA = i of matrix
+*           MUL   =N=         rAX=8i
+*           INCX  BUF         rX=BUF+8i
+*           INCX  N,5         rX=BUF+8i+j
+*           STX   0           content of aij is aij
+*           LD2   0           rI2 is temp var
+*           STX   0,2         
+*           INC5  1           j++
+*           J5NP  1B          if j <= n, repeat
+*           INC4  1           i++
+*           J4NP  2B          if i <= m, repeat
+
+START     ENT4  1-M         i=1-m
 * rI6 = k (BUF + 8i + j)
 * rI2 = i of check item
 * rI3 = j of check item
@@ -48,13 +64,12 @@ FIND      ENT4  -M
           INCX  N,5         rX=BUF+8i+j
           STX   0
           LD2   0           rI2=address of (k-check)
-          LD3   0,6         rI3=k-min
           LDA   0,2         rA=k-check
-          CMPA  0,3         compare k and aij
+          CMPA  0,6         compare k and aij
           JGE   4B
           ENT6  0,2         k=address of (k-min)
           JMP   4B
-5H        LDA   0,6         rA=k
+5H        ENTA  0,6         rA=k
           DECA  BUF         rA=8i+j
           SRB   30          rAX=rA
           DIV   =N=
@@ -68,14 +83,16 @@ FIND      ENT4  -M
           STX   0
           LD5   0           rI5=address of (k-check) column
           LDA   0,5         rA=k-check
-          LD5   0,6
-          CMPA  0,5
+          CMPA  0,6
           JLE   7F
           JMP   3B
 7H        INC3  1
           J3NP  6B
-          ENT1  0,6
+          ENTA  0,6
+          CHAR
+          STX   0
+          LD1   0
 
-EXIT      OUT   0,1(STDOUT)
+EXIT      OUT   0(STDOUT)
           HLT
           END   START
