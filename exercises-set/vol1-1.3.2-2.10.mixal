@@ -20,7 +20,8 @@ START     ENT4  1-M         i=1-m
           INCX  BUF         rX=BUF+8i
           INCX  N,5         rX=BUF+8i+j
           STX   0           content of aij is aij
-          LDX   0
+          LD2   0           rI2 is temp var
+          STX   0,2         
           INC5  1           j++
           J5NP  1B          if j <= n, repeat
           INC4  1           i++
