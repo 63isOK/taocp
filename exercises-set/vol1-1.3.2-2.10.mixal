@@ -37,32 +37,39 @@ FIND      ENT4  -M
           ENTA  M,4         rA = i of matrix
           MUL   =N=         rAX=8i
           INCX  BUF         rX=BUF+8i
+          INCX  N,5         rX=BUF+8i+1
           STX   0
-          ENT6  0,5        k = address of minimum item of i-th row (now is a11)
+          LD6   0           k=rX, k=BUF+8i+1,k = address of minimum item of i-th row (now is ai1)
 4H        INC5  1           j++
           J5P   5F
           ENTA  M,4         rA = i of matrix
           MUL   =N=         rAX=8i
           INCX  BUF         rX=BUF+8i
+          INCX  N,5         rX=BUF+8i+j
           STX   0
-          LDA   0,5        rA = new k
-          CMPA  0,6         compare k and aij
+          LD2   0           rI2=address of (k-check)
+          LD3   0,6         rI3=k-min
+          LDA   0,2         rA=k-check
+          CMPA  0,3         compare k and aij
           JGE   4B
-          STX   0
-          ENT6  0,5
+          ENT6  0,2         k=address of (k-min)
           JMP   4B
 5H        LDA   0,6         rA=k
-          SUB   BUF
-          DIV   N
-          SLB   6
-          ADD   BUF
+          DECA  BUF         rA=8i+j
+          SRB   30          rAX=rA
+          DIV   =N=
+          SLB   30          rA=j
           STA   0
-          LD2   0
-6H        ENT3  1-M
-          ENTA  0,3
+          LD2   0           rI2=j
+          ENT3  1-M
+6H        ENTA  M,3
           MUL   =N=         rAX=8i
-          ADD   BUF,2
-          CMPA  0,6
+          INCX  BUF,2       rX=BUF+8i+j
+          STX   0
+          LD5   0           rI5=address of (k-check) column
+          LDA   0,5         rA=k-check
+          LD5   0,6
+          CMPA  0,5
           JLE   7F
           JMP   3B
 7H        INC3  1
