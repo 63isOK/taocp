@@ -89,4 +89,78 @@ saddle point,叫鞍点,在数学的很多方面都有应用,
 
 ## 解法1
 
+解法1的思路和我们自己写的思路很类似:
+
+遍历每一行,找出行中最小元素,看看在其列上是否是最大.
+
+"ENT3 0", "INC3 1" 连续的这种写法,非常适合循环中,
+这样跳转放在INC3 1这行.
+
+这个题目中鞍点是指极值点,需要注意的是一行可能存在多个极值.
+如果某一行所有元素相等,那么这行所有元素都是潜在的鞍点.
+
+解法1中,将每一行的所有最小数全部找出来,rI3,也就是代码中的k,
+k表示最小数的个数,而且还用内存来存储每个最小数的列索引,
+也就是存储c.
+
+最巧的是,利用124H来对应大于/等于/小于.设计的非常巧妙.
+
+rowmin,找行中最小,还是非常优雅的.找列中最大,写法非常简洁,
+这些和后面的比起来就稍显逊色.
+
+mixal的写法和c++/go的写法思路完全不一样,
+不需要子程序的概念,直接使用跳转.
+行中最小,是一个代码片段,只有一个跳出出口,就是J2Z COLMAX,
+列中最大,有两个出口:要么是鞍点,要么不是鞍点,
+是鞍点跳到YES,不是鞍点跳到NO,在NO中决定是继续跳到处理下一个最小值,
+还是跳到行中最小来处理下一行.
+
+这是第一次摆脱高级语言的"函数"特征,体会到机器语言的美丽和优雅.
+
+而且这个写法的代码量,只是我写出来的一半.
+这个写法避免了除法,每个小模块的写法都有套路:
+前面是初始化,紧跟迭代点,最后面是出口点.
+
+下面是代码:
+
+    * find saddle point of matrix
+    *
+    * convention:
+    * rX = current min
+    * rI1 = address of check item ([72...0])
+    * rI2 = column index of rI1
+    * rI3 = size of list of minima
+    *
+    * terminating condition: rIx <= 0
+    *
+    * label   ins   operand     comment
+    A10       EQU   1008        address of a10
+    LIST      EQU   1000
+
+    START     ENT1  9*8         rI1(m) m=72,"A10,1" is address of item
+    ROWMIN    ENT2  8           rI2(c) c=8, column index of m
+    2H        LDX   A10,1       rX=content(m)
+              ENT3  0           rI3(k) k=0
+    4H        INC3  1           k++
+              ST2   LIST,3      store c to 1001-1008, content(1001-1008) is c
+    1H        DEC1  1           m--
+              DEC2  1           c--
+              J2Z   COLMAX      a row is finshed
+    3H        CMPX  A10,1       compare m and last m
+              JL    1B          not found min
+              JG    2B          found min
+              JMP   4B          found same min
+    COLMAX    LD2   LIST,3      rI2(p) p = lastest checking min (row)
+              INC2  9*8-8       p = lastest item of the column
+    1H        CMPX  A10,2       compare rX and every item in column
+              JL    NO          it is not a saddle point
+              DEC2  8           p-=8, p = item above of column
+              J2P   1B
+    YES       INC1  A10+8,2     find a saddle point
+              HLT
+    NO        DEC3  1           check the next min item of a row
+              J3P   COLMAX
+              J1P   ROWMIN      find next row
+              HLT
+
 ## 解法2
