@@ -197,3 +197,79 @@ mixal的写法和c++/go的写法思路完全不一样,
 
 最后,我们只需要潜在行和潜在列合并,找到交集,就知道解了.
 
+接下来,给解法的源码添加注释
+
+在源码中的第一阶段,用rX来存放每列的最大值,
+每次存放列最大值时,会和rA比较,rA中方法的最小的列最大值.
+
+非常优雅的就是rA存的是潜在最小的"列最大值",
+每次计算完一列,rA都会指向最新的最小列最大值.
+rA存的是具体的值,而不是矩阵的行列,
+好处是:就算出现多个鞍点,他们在一行上,或一列上,值是相等的.
+
+所以第一阶段就很好理解了,就是查找列最大值,并存放在1001-1008上,
+共8个,rA指向最小的列最大值.
+
+分析第二阶段,依然是遍历所有元素,源码中是从1080到1009,倒序.
+遍历的过程中会遇到以下情况:
+
+- 如果某个元素比rA还小,则说明这行不是鞍点的潜在行
+  - 因为这行如果存在鞍点,鞍点的值要小于等于上面说的元素
+  - 在列上,这个鞍点的值要大于等于rA,显然是不可能的
+- 如果某个元素和rA相等
+  - 且这列的最大值就是rA,那么这个元素是潜在的鞍点
+  - 如果遍历到这行的最后一个元素,和rA相等,且列最大值和rA相等,那么就是鞍点
+- 如果某个元素比rA大
+
+存不存在某行,都比rA大,还存在鞍点?
+不存在.因为每列最大值都不比这行元素小,rA取至列最大值,
+所以不存在rA比行中所有元素都小的情况,至少有一个元素
+等于rA或小于rA.
+
+当一行不是潜在行时,先前标记的潜在鞍点,也会被清除掉.
+
+第二阶段,也是基于数学的视角,不是复制第一阶段的处理过程.
+而是基于第一阶段,用数学再次分析了的.
+
+    * find saddle point of matrix
+    *
+    * convention:
+    *
+    * terminating condition: rIx <= 0
+    * * label   ins   operand     comment
+    CMAX        EQU   1000
+    A10         EQU   CMAX+8
+    PHASE1      ENT1  8           rI1=c, c = current column
+    3H          ENT2  9*8-8,1     rI2=m, A10+m:address of the item
+                JMP   2F
+    1H          CMPX  A10,2       compare m and above
+                JGE   *+2         if m > above, find next above,otherwise rX=above
+    2H          LDX   A10,2       rX=content(m)
+                DEC2  8           m-=8
+                J2P   1B          until now, we found the max item of column
+                STX   CMAX+8,2    1001-1008,store the max value of column
+                J2Z   1F
+                CMPA  CMAX+8,2    rA=min(1001-1008),rA=min item of max(every colume)
+                JLE   *+2
+    1H          LDA   CMAX+8,2    rA=content(m)
+                DEC1  1           c--
+                J1P   3B          now, 1001-1008,stroe the max of (column1...9)
+    PHASE2      ENT3  9*8-8
+    3H          ENT2  8,3
+                ENT4  8
+    1H          CMPA  A10,2
+                JG    NO
+                JL    2F
+                CMPA  CMAX,4
+                JNE   2F
+                ENT1  A10,2
+    2H          DEC4  1
+                DEC2  1
+                J4P   1B
+                HLT
+    NO          DEC3  8
+                ENT1  0
+                J3P   3B
+                HLT
+
+这部分也有很多新的写法.不过解法2最重要的是:不理清数学分析,是看不懂代码的.
